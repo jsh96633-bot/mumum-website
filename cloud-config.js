@@ -1,1 +1,1 @@
-window.MUMUM_CLOUD={url:"",anonKey:""};
+window.MUMUM_CLOUD={url:"https://rabkkohagxjvpgdeiykl.supabase.co",anonKey:"sb_publishable__dM9KkDwcHDbyqhEIGwt5Q_FUpsviYu"};
