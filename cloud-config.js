@@ -1,0 +1,1 @@
+window.MUMUM_CLOUD={url:"",anonKey:""};
