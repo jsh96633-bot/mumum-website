@@ -49,16 +49,16 @@ let cart=[];try{cart=JSON.parse(localStorage.getItem('mumum-cart')||'[]');if(!Ar
 </button>
 <section class="mumum-contact-panel" id="mumumContactPanel" role="dialog" aria-label="머뭄 상품 문의" aria-modal="false">
 <div class="mumum-contact-head"><div><strong>Contact mumum</strong><p>소중한 기억을 위한 제품을 문의해 주세요.</p></div><button class="mumum-contact-close" type="button" onclick="mumumToggleContact(false)" aria-label="문의창 닫기">×</button></div>
-<form class="mumum-contact-form" name="mumum-inquiry" method="POST" action="/inquiry-success.html" data-netlify="true" netlify-honeypot="bot-field">
+<form class="mumum-contact-form" name="mumum-inquiry" id="mumumInquiryForm">
 <input type="hidden" name="form-name" value="mumum-inquiry">
 <p style="display:none"><label>입력하지 마세요 <input name="bot-field"></label></p>
 <label>성함 <input type="text" name="name" autocomplete="name" placeholder="성함을 입력해 주세요" required maxlength="80"></label>
 <label>이메일 <input type="email" name="email" autocomplete="email" placeholder="답변받을 이메일 주소" required maxlength="160"></label>
 <label>문의 제품 <select name="product" required><option value="">제품을 선택해 주세요</option><option value="메모리얼 펜던트">메모리얼 펜던트</option><option value="도자기 유골함">도자기 유골함</option><option value="기타 문의">기타 문의</option></select></label>
 <label>문의 내용 <textarea name="message" required maxlength="3000" placeholder="궁금한 내용을 남겨 주세요."></textarea></label>
-<label class="consent"><input type="checkbox" name="privacy-consent" value="동의" required><span>문의 답변을 위한 성함·이메일·문의 내용 수집 및 이용에 동의합니다. 수집 정보는 문의 응대에 사용됩니다. 운영 전 개인정보 처리방침을 확정해 주세요.</span></label>
+<label class="consent"><input type="checkbox" name="privacy-consent" value="동의" required><span>문의 답변을 위한 성함·이메일·문의 내용 수집 및 이용에 동의합니다. 수집 정보는 문의 응대에 사용됩니다. </span></label>
 <button type="submit">문의 보내기</button>
-<p class="hint">Netlify Forms 설정이 활성화된 사이트에서만 문의가 접수됩니다. 운영 전 테스트 제출과 알림 설정이 필요합니다.</p>
+<p class="hint">문의는 MUMUM 관리자에게 접수됩니다.</p>
 </form></section>
 <script>
 function mumumToggleContact(force){
@@ -86,4 +86,6 @@ play.onclick=()=>playing?stop():start();volume.oninput=()=>{if(master)master.gai
 try{const res=await fetch(c.url.replace(/\/$/,'')+'/rest/v1/site_images?select=slot,image_url',{headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey}});if(!res.ok)throw Error('사진 불러오기 실패');const rows=await res.json();const slots={hero:'.hero img',story:'.story img',pendant:'.category[href="#pendants"] img',urn:'.category[href="#urns"] img'};for(const row of rows){if(!slots[row.slot]||!/^https:\/\//.test(row.image_url))continue;const el=document.querySelector(slots[row.slot]);if(el)el.src=row.image_url;}window.MUMUM_CLOUD_IMAGES=rows;}catch(e){console.warn('MUMUM 사진 동기화:',e.message)}})();
 </script><script src="./cloud-config.js"></script><script>
 (async()=>{const c=window.MUMUM_CLOUD||{};if(!c.url||!c.anonKey)return;try{const r=await fetch(c.url+'/rest/v1/mumum_products?select=*&published=eq.true&order=created_at.desc',{headers:{apikey:c.anonKey,Authorization:'Bearer '+c.anonKey}});if(!r.ok)return;for(const p of await r.json()){if(!p.name||!['pendants','urns'].includes(p.category))continue;products.push({id:p.id,name:p.name,type:p.category==='pendants'?'MEMORIAL PENDANT':'CERAMIC URN',image:p.image_url||'assets/mumum-silver-pendant.png',desc:p.description||'',anchor:p.category,price:p.price})}renderProducts()}catch(e){console.warn('상품 동기화 오류',e)}})();
+</script><script src="./cloud-config.js"></script><script>
+document.getElementById('mumumInquiryForm').addEventListener('submit',async function(e){e.preventDefault();const form=this,btn=form.querySelector('[type=submit]'),hint=form.querySelector('.hint'),c=window.MUMUM_CLOUD||{},fd=new FormData(form);if(fd.get('bot-field'))return;btn.disabled=true;btn.textContent='접수 중…';try{const payload={name:String(fd.get('name')||'').trim(),email:String(fd.get('email')||'').trim(),product:String(fd.get('product')||''),message:String(fd.get('message')||'').trim()};const r=await fetch(c.url+'/rest/v1/mumum_inquiries',{method:'POST',headers:{apikey:c.anonKey,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!r.ok)throw Error('접수 실패 ('+r.status+')');form.reset();hint.textContent='✓ 문의가 정상 접수되었습니다.';btn.textContent='접수 완료'}catch(err){hint.textContent=err.message+' · 잠시 후 다시 시도해 주세요.';btn.textContent='다시 보내기'}finally{btn.disabled=false}});
 </script></body></html>
